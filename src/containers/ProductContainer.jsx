@@ -1,86 +1,51 @@
-import { API_AVAILABILITY, API_PRODUCTS } from "../consts/Api";
+import { API_PRODUCTS, PRODUCTS } from "../consts/Api";
 import React, { useEffect, useState } from "react";
 import {
     categorizedProductsLength,
     combineProductsAndAvailability,
     createFullList,
-    processAvailability,
-    processProducts,
+    fetchProducts,
 } from "./utilities";
 
 import { Main } from "../views/Main";
 
-const products = [
-    {
-        id: 1,
-        name: "some item",
-        availability: "available",
-    },
-];
+// On start, get all data, simply everything and store it
+// On category select just display the wanted items
+// Update cache every ~5 minutes
+// Also add manual update button
 
 export const ProductContainer = () => {
-    const [availabilityData, setAvailabilityData] = useState({});
-    const [productData, setProductData] = useState({});
-    const [combinedData, setCombinedData] = useState({});
+    const [fullData, setFullData] = useState({});
+    const [productCategory, setProductCategory] = useState(undefined);
 
     useEffect(() => {
-        const productKeys = Object.keys(productData);
-        const availabilityKeys = Object.keys(availabilityData);
-        const combinedKeys = Object.keys(combinedData);
+        fetchEverything();
+    }, []);
 
-        availabilityKeys.map((manufacturer) => {
-            if (
-                productKeys.includes(manufacturer) &&
-                !combinedKeys.includes(manufacturer)
-            ) {
-                const processedData = combineProductsAndAvailability(
-                    productData[manufacturer],
-                    availabilityData[manufacturer]
-                );
-                setCombinedData((previous) => ({
-                    ...previous,
-                    [manufacturer]: processedData,
-                }));
-            }
-        });
-    }, [availabilityData, productData, combinedData]);
-
-    useEffect(() => {
-        console.log("full data", combinedData);
-    });
-
-    const showProduct = async (productType) => {
-        try {
-            setCombinedData({});
-            const response = await fetch(`${API_PRODUCTS}${productType}`);
-            const products = await response.json();
-            const categorizedProducts = processProducts(products);
-            setProductData(categorizedProducts);
-            getAvailability(Object.keys(categorizedProducts));
-        } catch (error) {
-            console.log("Received error", error);
-        }
-    };
-
-    const getAvailability = async (manufacturers) => {
-        manufacturers.map((manufacturer) =>
-            fetch(`${API_AVAILABILITY}${manufacturer}`)
-                .then((data) => data.json())
-                .then((data) => {
-                    const items = processAvailability(data.response);
-                    setAvailabilityData((previous) => ({
-                        ...previous,
-                        [manufacturer]: items,
-                    }));
-                })
+    const fetchEverything = async () => {
+        const categories = Object.values(PRODUCTS);
+        console.log("Categories", categories);
+        const data = await Promise.all(
+            categories.map(async (category) => {
+                const products = await fetchProducts(category);
+                return { category: category, products: products };
+            })
         );
+        console.log("Full data", data);
+        const categorizedData = data.reduce((collection, category) => {
+            return {
+                ...collection,
+                [category.category]: category.products,
+            };
+        }, {});
+        setFullData(categorizedData);
     };
 
     return (
         <Main
-            products={createFullList(combinedData)}
-            totalCount={categorizedProductsLength(productData)}
-            showProduct={showProduct}
+            products={createFullList(fullData[productCategory] ?? [])}
+            totalCount={fullData[productCategory]?.length ?? 0}
+            showProduct={setProductCategory}
         />
     );
 };
