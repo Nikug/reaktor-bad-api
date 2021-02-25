@@ -1,7 +1,14 @@
-import { API_PRODUCTS, API_URL } from "../consts/Api";
+import { API_AVAILABILITY, API_PRODUCTS } from "../consts/Api";
+import React, { useEffect, useState } from "react";
+import {
+    categorizedProductsLength,
+    combineProductsAndAvailability,
+    createFullList,
+    processAvailability,
+    processProducts,
+} from "./utilities";
 
 import { Main } from "../views/Main";
-import React from "react";
 
 const products = [
     {
@@ -9,40 +16,71 @@ const products = [
         name: "some item",
         availability: "available",
     },
-    {
-        id: 2,
-        name: "some item 2",
-        availability: "not available",
-    },
-    {
-        id: 3,
-        name: "some item 3",
-        availability: "less than 3",
-    },
-    {
-        id: 4,
-        name: "some item 4",
-        availability: "in stock",
-    },
-    {
-        id: 5,
-        name: "some item 5",
-        availability: "available",
-    },
 ];
 
 export const ProductContainer = () => {
+    const [availabilityData, setAvailabilityData] = useState({});
+    const [productData, setProductData] = useState({});
+    const [combinedData, setCombinedData] = useState({});
+
+    useEffect(() => {
+        const productKeys = Object.keys(productData);
+        const availabilityKeys = Object.keys(availabilityData);
+        const combinedKeys = Object.keys(combinedData);
+
+        availabilityKeys.map((manufacturer) => {
+            if (
+                productKeys.includes(manufacturer) &&
+                !combinedKeys.includes(manufacturer)
+            ) {
+                const processedData = combineProductsAndAvailability(
+                    productData[manufacturer],
+                    availabilityData[manufacturer]
+                );
+                setCombinedData((previous) => ({
+                    ...previous,
+                    [manufacturer]: processedData,
+                }));
+            }
+        });
+    }, [availabilityData, productData, combinedData]);
+
+    useEffect(() => {
+        console.log("full data", combinedData);
+    });
+
     const showProduct = async (productType) => {
         try {
-            const response = await fetch(
-                `${API_URL}${API_PRODUCTS}${productType}`
-            );
-            const data = await response.json();
-            console.log("Received data", data);
+            setCombinedData({});
+            const response = await fetch(`${API_PRODUCTS}${productType}`);
+            const products = await response.json();
+            const categorizedProducts = processProducts(products);
+            setProductData(categorizedProducts);
+            getAvailability(Object.keys(categorizedProducts));
         } catch (error) {
             console.log("Received error", error);
         }
     };
 
-    return <Main products={products} showProduct={showProduct} />;
+    const getAvailability = async (manufacturers) => {
+        manufacturers.map((manufacturer) =>
+            fetch(`${API_AVAILABILITY}${manufacturer}`)
+                .then((data) => data.json())
+                .then((data) => {
+                    const items = processAvailability(data.response);
+                    setAvailabilityData((previous) => ({
+                        ...previous,
+                        [manufacturer]: items,
+                    }));
+                })
+        );
+    };
+
+    return (
+        <Main
+            products={createFullList(combinedData)}
+            totalCount={categorizedProductsLength(productData)}
+            showProduct={showProduct}
+        />
+    );
 };

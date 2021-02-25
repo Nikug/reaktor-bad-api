@@ -1,13 +1,19 @@
+import "./Products.scss";
+
 import React from "react";
 
-export const Products = ({ products }) => {
+export const Products = ({ products, totalCount }) => {
+    const productCount = products.length;
     return (
         <div>
+            <h3>{`Showing ${productCount}/${totalCount} products`}</h3>
             <ul>
                 {products.map((product) => (
                     <li key={product.id}>
-                        <span>{product.name}</span>
-                        <span>{product.availability}</span>
+                        <span className="item-name">{product.name}</span>
+                        <span className="item-info">
+                            {product.availability}
+                        </span>
                     </li>
                 ))}
             </ul>
