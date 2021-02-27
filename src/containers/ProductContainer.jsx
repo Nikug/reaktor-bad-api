@@ -15,13 +15,15 @@ export const ProductContainer = () => {
     const [fullData, setFullData] = useState({});
     const [productCategory, setProductCategory] = useState(undefined);
     const [loading, setLoading] = useState(false);
+    const [intervalFunction, setIntervalFunction] = useState();
 
     useEffect(() => {
         fetchEverything();
-        setInterval(() => {
+        const interval = setInterval(() => {
             clearCache();
             fetchEverything();
         }, REFRESH_DELAY);
+        setIntervalFunction(interval);
     }, []);
 
     const fetchEverything = async () => {
@@ -54,6 +56,19 @@ export const ProductContainer = () => {
         productCategory,
     ]);
 
+    const manualRefresh = async () => {
+        clearCache();
+        clearInterval(intervalFunction);
+
+        await fetchEverything();
+
+        const interval = setInterval(() => {
+            clearCache();
+            fetchEverything();
+        }, REFRESH_DELAY);
+        setIntervalFunction(interval);
+    };
+
     return (
         <Main
             products={items ?? []}
@@ -61,6 +76,7 @@ export const ProductContainer = () => {
             category={productCategory}
             loading={loading}
             showProduct={setProductCategory}
+            refreshData={manualRefresh}
         />
     );
 };

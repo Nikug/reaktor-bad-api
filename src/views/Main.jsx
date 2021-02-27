@@ -8,10 +8,15 @@ export const Main = ({
     totalCount,
     category,
     loading,
+    refreshData,
 }) => {
     return (
         <>
-            <Header showProduct={showProduct} />
+            <Header
+                showProduct={showProduct}
+                refreshData={refreshData}
+                loading={loading}
+            />
             {loading && <p>Loading data... This can take up to a minute</p>}
             <Products
                 products={products}
