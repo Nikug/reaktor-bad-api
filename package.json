@@ -22,7 +22,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "production": "yarn build && node --experimental-modules ./server/main.js",
-        "heroku-postbuild": "yarn install && yarn production"
+        "heroku-postbuild": "yarn production"
     },
     "eslintConfig": {
         "extends": [
