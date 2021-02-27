@@ -4,13 +4,6 @@ import { clearCache, createFullList, fetchProducts } from "./utilities";
 
 import { Main } from "../views/Main";
 
-// On start, get all data, simply everything and store it
-// On category select just display the wanted items
-// Update cache every ~5 minutes
-// Also add manual update button
-
-// In case availability data is missing, refetch that data after a delay
-
 export const ProductContainer = () => {
     const [fullData, setFullData] = useState({});
     const [productCategory, setProductCategory] = useState(undefined);
