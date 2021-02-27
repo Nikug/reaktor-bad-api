@@ -14,18 +14,14 @@ export const clearCache = () => {
 
 export const fetchProducts = async (productType) => {
     try {
-        console.log("Fetching", productType);
         const response = await fetch(`${API_PRODUCTS}${productType}`);
         const products = await response.json();
         const categorizedProducts = processProducts(products);
-        console.log("Total products for", productType, products.length);
         const availabilities = await getAvailability(
             Object.keys(categorizedProducts)
         );
-        console.log("Got availability", availabilities);
 
         const fullData = combineData(categorizedProducts, availabilities);
-        console.log("Fulldata for", productType, fullData);
         return fullData;
     } catch (error) {
         console.log("Received error", error);
@@ -35,8 +31,6 @@ export const fetchProducts = async (productType) => {
 const combineData = (productData, availabilityData) => {
     const productKeys = Object.keys(productData);
     const availabilityKeys = Object.keys(availabilityData);
-
-    console.log("Keys", productKeys, availabilityKeys);
 
     const combinedData = availabilityKeys.reduce(
         (combinedData, manufacturer) => {
@@ -87,33 +81,9 @@ export const getAvailability = async (manufacturers) => {
         {}
     );
     return categorizedData;
-
-    // const availabilityData = {};
-    // for (let i = 0, limit = manufacturers.length; i < limit; i++) {
-    //     let json = cache[manufacturers[i]];
-    //     if (json === undefined) {
-    //         const data = await fetch(`${API_AVAILABILITY}${manufacturers[i]}`);
-    //         json = await data.json();
-
-    //         console.log("Response json", json);
-
-    //         if (json.response === "[]") {
-    //             console.log("Refetching data due to error");
-    //             i -= 1;
-    //             continue;
-    //         }
-
-    //         cache[manufacturers[i]] = json;
-    //     }
-
-    //     const processedData = processAvailability(json.response);
-    //     availabilityData[manufacturers[i]] = processedData;
-    // }
-    // return availabilityData;
 };
 
 export const combineProductsAndAvailability = (products, availabilities) => {
-    // TODO: optimize by reducing availabilities size on every found id
     return products.map((product) => {
         const item = availabilities.find(
             (availability) => availability.id === product.id

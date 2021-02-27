@@ -29,7 +29,6 @@ export const ProductContainer = () => {
     const fetchEverything = async () => {
         setLoading(true);
         const categories = Object.values(PRODUCTS);
-        console.log("Categories", categories);
 
         let data = {};
         for (let i = 0, limit = categories.length; i < limit; i++) {
@@ -37,15 +36,9 @@ export const ProductContainer = () => {
             data[categories[i]] = products;
         }
 
-        console.log("Full data", data);
-
         setFullData(data);
         setLoading(false);
     };
-
-    useEffect(() => {
-        console.log("Full data by category", fullData[productCategory]);
-    }, [fullData, productCategory]);
 
     const items = useMemo(() => createFullList(fullData[productCategory]), [
         fullData,
