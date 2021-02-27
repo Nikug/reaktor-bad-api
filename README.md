@@ -11,7 +11,7 @@ The assignment was about using the API and not making the frontend look good, so
 
 ## Demo
 
-Live demo is running at [https://reaktor-bad-api.herokuapp.com/]
+Live demo is running at https://reaktor-bad-api.herokuapp.com/
 
 ## Available Scripts
 
