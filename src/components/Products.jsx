@@ -1,6 +1,5 @@
 import "./Products.scss";
 
-import { PRODUCTS } from "../consts/Api";
 import React from "react";
 
 export const Products = ({ products, totalCount, category }) => {

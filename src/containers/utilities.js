@@ -2,6 +2,7 @@ import {
     API_AVAILABILITY,
     API_PRODUCTS,
     ERROR_TYPE,
+    RETRY_FETCHES,
     XML_TAGS,
 } from "../consts/Api";
 
@@ -55,19 +56,60 @@ const combineData = (productData, availabilityData) => {
 };
 
 export const getAvailability = async (manufacturers) => {
-    const availabilityData = {};
-    for (let i = 0, limit = manufacturers.length; i < limit; i++) {
-        let json = cache[manufacturers[i]];
-        if (json === undefined) {
-            const data = await fetch(`${API_AVAILABILITY}${manufacturers[i]}`);
-            json = await data.json();
-            cache[manufacturers[i]] = json;
-        }
+    const data = await Promise.all(
+        manufacturers.map(async (manufacturer) => {
+            let json = cache[manufacturer];
+            if (json === undefined) {
+                for (let i = 0; i < RETRY_FETCHES; i++) {
+                    const data = await fetch(
+                        `${API_AVAILABILITY}${manufacturer}`
+                    );
+                    json = await data.json();
 
-        const processedData = processAvailability(json.response);
-        availabilityData[manufacturers[i]] = processedData;
-    }
-    return availabilityData;
+                    if (json.response !== "[]") {
+                        break;
+                    }
+                }
+
+                cache[manufacturer] = json;
+            }
+
+            const processedData = processAvailability(json.response);
+            return { manufacturer: manufacturer, data: processedData };
+        })
+    );
+
+    const categorizedData = data.reduce(
+        (collection, availability) => ({
+            ...collection,
+            [availability.manufacturer]: availability.data,
+        }),
+        {}
+    );
+    return categorizedData;
+
+    // const availabilityData = {};
+    // for (let i = 0, limit = manufacturers.length; i < limit; i++) {
+    //     let json = cache[manufacturers[i]];
+    //     if (json === undefined) {
+    //         const data = await fetch(`${API_AVAILABILITY}${manufacturers[i]}`);
+    //         json = await data.json();
+
+    //         console.log("Response json", json);
+
+    //         if (json.response === "[]") {
+    //             console.log("Refetching data due to error");
+    //             i -= 1;
+    //             continue;
+    //         }
+
+    //         cache[manufacturers[i]] = json;
+    //     }
+
+    //     const processedData = processAvailability(json.response);
+    //     availabilityData[manufacturers[i]] = processedData;
+    // }
+    // return availabilityData;
 };
 
 export const combineProductsAndAvailability = (products, availabilities) => {

@@ -30,20 +30,16 @@ export const ProductContainer = () => {
         setLoading(true);
         const categories = Object.values(PRODUCTS);
         console.log("Categories", categories);
-        const data = await Promise.all(
-            categories.map(async (category) => {
-                const products = await fetchProducts(category);
-                return { category: category, products: products };
-            })
-        );
+
+        let data = {};
+        for (let i = 0, limit = categories.length; i < limit; i++) {
+            const products = await fetchProducts(categories[i]);
+            data[categories[i]] = products;
+        }
+
         console.log("Full data", data);
-        const categorizedData = data.reduce((collection, category) => {
-            return {
-                ...collection,
-                [category.category]: category.products,
-            };
-        }, {});
-        setFullData(categorizedData);
+
+        setFullData(data);
         setLoading(false);
     };
 

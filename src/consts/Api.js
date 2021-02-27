@@ -17,3 +17,4 @@ export const XML_TAGS = {
 export const ERROR_TYPE = "ERROR";
 
 export const REFRESH_DELAY = 6 * 60 * 1000; // 6 minutes
+export const RETRY_FETCHES = 3;
