@@ -9,6 +9,10 @@ In case availability data yields errors, the data is refetched. Since all the ma
 
 The assignment was about using the API and not making the frontend look good, so there is minimal effort in styling the user interface.
 
+## Demo
+
+Live demo is running at [https://reaktor-bad-api.herokuapp.com/]
+
 ## Available Scripts
 
 In the project directory, you can run:
