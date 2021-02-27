@@ -1,7 +1,6 @@
 import {
     API_AVAILABILITY,
     API_PRODUCTS,
-    API_URL,
     ERROR_TYPE,
     RETRY_FETCHES,
     XML_TAGS,
@@ -15,7 +14,7 @@ export const clearCache = () => {
 
 export const fetchProducts = async (productType) => {
     try {
-        const response = await fetch(`${API_URL}${API_PRODUCTS}${productType}`);
+        const response = await fetch(`${API_PRODUCTS}${productType}`);
         const products = await response.json();
         const categorizedProducts = processProducts(products);
         const availabilities = await getAvailability(
@@ -57,7 +56,7 @@ export const getAvailability = async (manufacturers) => {
             if (json === undefined) {
                 for (let i = 0; i < RETRY_FETCHES; i++) {
                     const data = await fetch(
-                        `${API_URL}${API_AVAILABILITY}${manufacturer}`
+                        `${API_AVAILABILITY}${manufacturer}`
                     );
                     json = await data.json();
 

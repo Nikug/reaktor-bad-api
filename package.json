@@ -3,10 +3,13 @@
     "version": "0.1.0",
     "private": true,
     "proxy": "https://bad-api-assignment.reaktor.com",
+    "type": "module",
     "dependencies": {
         "@testing-library/jest-dom": "^5.11.4",
         "@testing-library/react": "^11.1.0",
         "@testing-library/user-event": "^12.1.10",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
         "node-sass": "^5.0.0",
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
@@ -17,7 +20,8 @@
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "production": "yarn build && node --experimental-modules ./server/main.js"
     },
     "eslintConfig": {
         "extends": [
