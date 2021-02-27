@@ -1,11 +1,6 @@
-import { API_PRODUCTS, PRODUCTS } from "../consts/Api";
-import React, { useEffect, useState } from "react";
-import {
-    categorizedProductsLength,
-    combineProductsAndAvailability,
-    createFullList,
-    fetchProducts,
-} from "./utilities";
+import { PRODUCTS, REFRESH_DELAY } from "../consts/Api";
+import React, { useEffect, useMemo, useState } from "react";
+import { clearCache, createFullList, fetchProducts } from "./utilities";
 
 import { Main } from "../views/Main";
 
@@ -14,15 +9,23 @@ import { Main } from "../views/Main";
 // Update cache every ~5 minutes
 // Also add manual update button
 
+// In case availability data is missing, refetch that data after a delay
+
 export const ProductContainer = () => {
     const [fullData, setFullData] = useState({});
     const [productCategory, setProductCategory] = useState(undefined);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchEverything();
+        setInterval(() => {
+            clearCache();
+            fetchEverything();
+        }, REFRESH_DELAY);
     }, []);
 
     const fetchEverything = async () => {
+        setLoading(true);
         const categories = Object.values(PRODUCTS);
         console.log("Categories", categories);
         const data = await Promise.all(
@@ -39,12 +42,24 @@ export const ProductContainer = () => {
             };
         }, {});
         setFullData(categorizedData);
+        setLoading(false);
     };
+
+    useEffect(() => {
+        console.log("Full data by category", fullData[productCategory]);
+    }, [fullData, productCategory]);
+
+    const items = useMemo(() => createFullList(fullData[productCategory]), [
+        fullData,
+        productCategory,
+    ]);
 
     return (
         <Main
-            products={createFullList(fullData[productCategory] ?? [])}
-            totalCount={fullData[productCategory]?.length ?? 0}
+            products={items ?? []}
+            totalCount={items?.length ?? 0}
+            category={productCategory}
+            loading={loading}
             showProduct={setProductCategory}
         />
     );

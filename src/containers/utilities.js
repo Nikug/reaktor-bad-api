@@ -5,7 +5,11 @@ import {
     XML_TAGS,
 } from "../consts/Api";
 
-const cache = {};
+let cache = {};
+
+export const clearCache = () => {
+    cache = {};
+};
 
 export const fetchProducts = async (productType) => {
     try {
@@ -51,28 +55,19 @@ const combineData = (productData, availabilityData) => {
 };
 
 export const getAvailability = async (manufacturers) => {
-    const data = await Promise.all(
-        manufacturers.map(async (manufacturer) => {
-            let data = cache[manufacturer];
-            if (data === undefined) {
-                data = await fetch(`${API_AVAILABILITY}${manufacturer}`);
-                cache[manufacturer] = data;
-            }
-            const json = await data.json();
-            const processedData = processAvailability(json.response);
-            return { category: manufacturer, processedData: processedData };
-        })
-    );
-    console.log("Data", data);
+    const availabilityData = {};
+    for (let i = 0, limit = manufacturers.length; i < limit; i++) {
+        let json = cache[manufacturers[i]];
+        if (json === undefined) {
+            const data = await fetch(`${API_AVAILABILITY}${manufacturers[i]}`);
+            json = await data.json();
+            cache[manufacturers[i]] = json;
+        }
 
-    const categorizedData = data.reduce(
-        (collection, items) => ({
-            ...collection,
-            [items.category]: items.processedData,
-        }),
-        {}
-    );
-    return categorizedData;
+        const processedData = processAvailability(json.response);
+        availabilityData[manufacturers[i]] = processedData;
+    }
+    return availabilityData;
 };
 
 export const combineProductsAndAvailability = (products, availabilities) => {
@@ -121,6 +116,7 @@ export const processXML = (xml) => {
 };
 
 export const createFullList = (combinedData) => {
+    if (combinedData === undefined) return [];
     return Object.values(combinedData).flat(1);
 };
 

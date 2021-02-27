@@ -1,12 +1,17 @@
 import "./Products.scss";
 
+import { PRODUCTS } from "../consts/Api";
 import React from "react";
 
-export const Products = ({ products, totalCount }) => {
+export const Products = ({ products, totalCount, category }) => {
     const productCount = products.length;
     return (
         <div>
-            <h3>{`Showing ${productCount}/${totalCount} products`}</h3>
+            <h3>
+                {!!category
+                    ? `${category}: Showing ${productCount}/${totalCount} products`
+                    : "Category not selected"}
+            </h3>
             <ul>
                 {products.map((product) => (
                     <li key={product.id}>
